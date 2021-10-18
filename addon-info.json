@@ -1,0 +1,8 @@
+{
+  "name": "vim-md",
+  "description": "Markdown support for Vim.",
+  "author": "qtopierw",
+  "repository": {"type": "git", "url": "git://github.com/qtopierw/vim-md"},
+  "dependencies": {
+  }
+}
