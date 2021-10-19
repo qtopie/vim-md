@@ -10,6 +10,9 @@ type VimMdPlugin struct {
 }
 
 func (p *VimMdPlugin) Init(g govim.Govim, ch chan error) error {
+	g.DefineCommand("MarkdownPreview", previewMarkdown)
+	g.DefineCommand("MarkdownImagePaste", pasteImage)
+	g.DefineCommand("MarkdownImageClean", cleanImage)
 	return nil
 }
 
