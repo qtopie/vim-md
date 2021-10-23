@@ -1,7 +1,3 @@
-" VimMdPreview
-" VimMdImagePaste
-" VimMdImageClean
-
 " Workaround for https://github.com/vim/vim/issues/4530
 if exists("g:vimmdpluginloaded")
   finish
@@ -16,7 +12,7 @@ augroup END
 
 let s:channel = ""
 "let s:timer = ""
-"let s:plugindir = expand(expand("<sfile>:p:h:h"))
+let s:plugindir = expand(expand("<sfile>:p:h:h"))
 
 let s:waitingToDrain = 0
 let s:scheduleBacklog = []
@@ -161,10 +157,9 @@ function s:doShutdown()
 endfunction
 
 let opts = {"in_mode": "json", "out_mode": "json", "err_mode": "json", "callback": function("s:define"), "timeout": 30000, "waittime": 5000} 
-let targetdir = "/home/qtopierw/.vim/plugged/vim-md/"
-let start = targetdir."vim-md"
-" TODO remove me for debug purpose only
-"echo start
+let targetdir = s:plugindir . "/.bin/"
+let start = targetdir . "vim-md"
+
 let job = job_start(start)
 "let s:channel = job_getchannel(job)
 let s:channel = ch_open("localhost:8765", opts)

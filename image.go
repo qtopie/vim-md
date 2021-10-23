@@ -18,8 +18,7 @@ func pasteImage(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 	}
 
 	if rawMessage == nil || len(rawMessage) == 0 {
-		// create file first
-			g.ChannelEx("echomsg " + "'create file first, then paste image again'")
+		showErrMsg(g, "create file first, then paste image again.")
 		return nil
 	}
 
@@ -28,7 +27,7 @@ func pasteImage(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 
 	b := clipboard.Read(clipboard.FmtImage)
 	if b == nil {
-		g.ChannelEx("echomsg " + "'no image in system clipboard'")
+		showErrMsg(g, "no image in system clipboard.")
 		return nil
 	}
 
@@ -38,10 +37,17 @@ func pasteImage(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 		return err
 	}
 
-	g.Logf(assertsDir)
 	pictureName := generatePictureFileName()
 	file := filepath.Join(assertsDir, pictureName)
-	return os.WriteFile(file, b, os.ModePerm)
+	err = os.WriteFile(file, b, os.ModePerm)
+	if err != nil {
+		showErrMsg(g, "failed to save image %s.", file)
+		return err
+	}
+
+	appendLine(g, "![](%s)", filepath.Join(filepath.Base(assertsDir), pictureName))
+	showMsg(g, "saved image %s to assert dir.", pictureName)
+	return nil
 }
 
 func generatePictureFileName() string {
