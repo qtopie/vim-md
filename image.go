@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/chai2010/webp"
 	"github.com/govim/govim"
 	"golang.design/x/clipboard"
 )
@@ -31,6 +34,17 @@ func pasteImage(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 		return nil
 	}
 
+	img, err := png.Decode(bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	err = webp.Encode(&buf, img, &webp.Options{Lossless: true})
+	if err != nil {
+		return err
+	}
+
 	assertsDir := strings.ToLower(strings.TrimSuffix(mdFilePath, filepath.Ext(mdFilePath))) + ".assets"
 	err = os.MkdirAll(assertsDir, os.ModePerm)
 	if err != nil {
@@ -39,7 +53,7 @@ func pasteImage(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 
 	pictureName := generatePictureFileName()
 	file := filepath.Join(assertsDir, pictureName)
-	err = os.WriteFile(file, b, os.ModePerm)
+	err = os.WriteFile(file, buf.Bytes(), os.ModePerm)
 	if err != nil {
 		showErrMsg(g, "failed to save image %s.", file)
 		return err
@@ -53,7 +67,7 @@ func pasteImage(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 func generatePictureFileName() string {
 	t := time.Now()
 
-	return fmt.Sprintf("img-%d%02d%02d%02d%02d%02d.png", t.Year(), t.Month(),
+	return fmt.Sprintf("img-%d%02d%02d%02d%02d%02d.webp", t.Year(), t.Month(),
 		t.Day(), t.Hour(), t.Minute(), t.Second())
 }
 
