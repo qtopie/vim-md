@@ -13,5 +13,7 @@
 Put this in your vim plugin manager. Here's an example for `vim-plug`
 
 ```vimscript
-Plug 'qtopierw/vim-md', { 'do': ':VimMdUpdate' }
+Plug 'qtopie/vim-md', { 'do': ':VimMdUpdate' }
 ```
+
+Copy image to your system clipboard, then parse it to vim with `MarkdownImagePaste`
