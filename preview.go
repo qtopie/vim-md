@@ -2,7 +2,10 @@ package main
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"os/exec"
 	"runtime"
@@ -14,6 +17,13 @@ import (
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
 )
+
+//go:embed _template/preview.html
+var tpl string
+
+type MarkdownContent struct {
+	Content string
+}
 
 func previewMarkdown(g govim.Govim, flags govim.CommandFlags, args ...string) error {
 	rawMessage, err := g.ChannelExpr("join(getline(1, '$'), '\n')")
@@ -29,9 +39,15 @@ func previewMarkdown(g govim.Govim, flags govim.CommandFlags, args ...string) er
 }
 
 func serveHttp(content string) {
+	t, err := template.New("preview").Parse(tpl)
+	if err != nil {
+		log.Print(err)
+	}
+
 	buf := renderMarkdown(content)
-	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		rw.Write(buf.Bytes())
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		t.Execute(w, MarkdownContent{Content: buf.String()})
 	})
 
 	openBrowser("http://127.0.0.1:7070")
@@ -40,20 +56,19 @@ func serveHttp(content string) {
 
 func renderMarkdown(content string) bytes.Buffer {
 	md := goldmark.New(
-          goldmark.WithExtensions(extension.GFM),
-          goldmark.WithParserOptions(
-              parser.WithAutoHeadingID(),
-							parser.WithParagraphTransformers(),
-          ),
-          goldmark.WithRendererOptions(
-              html.WithUnsafe(),
-							html.WithHardWraps(),
-          ),
-      )
-			
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+			parser.WithParagraphTransformers(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithUnsafe(),
+			html.WithHardWraps(),
+		),
+	)
+
 	var buf bytes.Buffer
 
-	
 	if err := md.Convert([]byte(content), &buf); err != nil {
 		panic(err)
 	}
